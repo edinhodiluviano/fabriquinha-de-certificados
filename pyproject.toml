@@ -1,0 +1,32 @@
+[project]
+name = "fabriquinha-de-certificados"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=44.0.1",
+    "fastapi>=0.115.9",
+    "mangum>=0.19.0",
+    "pydantic>=2.10.6",
+    "pyjwt>=2.10.1",
+    "pypdf>=5.3.0",
+    "qrcode[pil]>=8.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "mypy>=1.15.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.7",
+]
+
+[tool.pytest.ini_options]
+addopts = "-vvv --cov-report=term-missing --cov=fabriquinha"
+testpaths = ["tests"]
+log_level = "DEBUG"
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
