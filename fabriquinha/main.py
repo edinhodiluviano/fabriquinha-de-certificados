@@ -57,13 +57,28 @@ def deserializar(
     return c
 
 
-def gerar_qrcode(conteudo: ConteudoAssinado, url_base: str) -> bytes:
+def gerar_link_validacao(conteudo: ConteudoAssinado, url_base: str) -> str:
+    link_validacao = urljoin(url_base, conteudo)
+    return link_validacao
+
+
+def gerar_qrcode(conteudo: ConteudoAssinado, url_base: str) -> str:
     # mimetype=image/png
     qrcode_str = urljoin(url_base, conteudo)
     img_obj = qrcode.make(qrcode_str)
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=2,
+        border=4,
+    )
+    qr.add_data(qrcode_str)
+    img_obj = qr.make_image(fill_color="black", back_color="white")
 
     img_io = io.BytesIO()
     img_obj.save(img_io, 'PNG')
     img_io.seek(0)
     img_bytes = img_io.read()
-    return img_bytes
+    img_base64 = base64.b64encode(img_bytes)
+    img_base64_str = img_base64.decode('utf8')
+    return img_base64_str

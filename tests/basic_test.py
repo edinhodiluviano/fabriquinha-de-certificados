@@ -81,7 +81,7 @@ def test_comprimir_resulta_somente_em_chars_url_safe_plus_equal(token_exemplo):
     assert len(chars - url_safe) == 0
 
 
-def test_gerar_qrcode_retorna_bytes(conteudo_exemplo):
+def test_gerar_qrcode_retorna_str(conteudo_exemplo):
     conteudo_assinado = main.assinar(conteudo_exemplo, CHAVE_PRIVADA)
     qrcode = main.gerar_qrcode(conteudo_assinado, 'https://www.abc.com')
-    assert isinstance(qrcode, bytes)
+    assert isinstance(qrcode, str)
