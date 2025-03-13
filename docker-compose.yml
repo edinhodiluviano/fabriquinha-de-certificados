@@ -1,0 +1,13 @@
+services:
+    database:
+        platform: linux/amd64
+        container_name: database
+        image: postgres:17.0-bookworm
+        env_file:
+            - .env
+        ports:
+          - "127.0.0.1:5432:5432"
+        healthcheck:
+            test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+            interval: 5s
+            retries: 15
