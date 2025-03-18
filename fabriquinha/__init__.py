@@ -1,1 +1,2 @@
-from . import ambiente, bd, main
+from . import ambiente, bd, rotas  # NOQA: I001
+from . import main

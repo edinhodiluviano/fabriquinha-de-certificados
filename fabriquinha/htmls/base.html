@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            font-family: verdana;
+            background-color: #4787b9;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        footer {
+            font-family: verdana;
+            background-color: #4787b9;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .content {
+            color: #303030;
+            font-family: verdana;
+            margin-top: 30px;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Validador de Certificados</h1>
+    </header>
+
+    <div class="content">
+        {% block content %}
+        <!-- Conteúdo padrão -->
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p>❤️</p>
+    </footer>
+
+</body>
+</html>

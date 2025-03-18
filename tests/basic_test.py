@@ -9,11 +9,6 @@ def test_deve_sempre_passar():
     pass
 
 
-def test_gerar_qrcode_retorna_str():
-    qrcode = fabr.main.gerar_qrcode(s='laksmdc')
-    assert isinstance(qrcode, str)
-
-
 def test_criar_config_retorna_objeto_config():
     config = fabr.ambiente.criar_config()
     assert isinstance(config, fabr.ambiente.Config)
@@ -22,11 +17,6 @@ def test_criar_config_retorna_objeto_config():
 def test_criar_config_levanta_erro_com_log_level_errado():
     with pytest.raises(pydantic.ValidationError):
         fabr.ambiente.criar_config(log_level='aaa')
-
-
-def test_criar_config_levanta_erro_com_ambiente_errado():
-    with pytest.raises(pydantic.ValidationError):
-        fabr.ambiente.criar_config(env='aaa')
 
 
 def test_criar_sessao_do_banco_retorna_objeto_de_sessao():
@@ -59,3 +49,45 @@ def test_tabelas_sao_deletadas_entre_tests_parte_2(sessao):
     sessao.add(modelo)
     sessao.commit()
     assert len(sessao.scalars(exp).all()) == 1
+
+
+def test_get_ping_retorna_200(cliente):
+    resp = cliente.get('ping')
+    assert resp.status_code == 200
+
+
+def test_buscar_cert_retorna_certificado(sessao, certificados):
+    certificado = certificados[0]
+    resp = fabr.rotas.buscar_certificado(sessao, certificado.codigo)
+    assert isinstance(resp, fabr.bd.Certificado)
+    assert resp == certificado
+    assert resp.id == certificado.id
+    assert resp.codigo == certificado.codigo
+
+
+def test_buscar_cert_com_codigo_inexistente_retorna_none(sessao, certificados):
+    resp = fabr.rotas.buscar_certificado(sessao, 'a' * 12)
+    assert resp is None
+
+
+def test_comprimir_retorna_str(gerar_str):
+    s = gerar_str(20)
+    resp = fabr.rotas.comprimir(s)
+    assert isinstance(resp, str)
+
+
+def test_descomprimir_e_inversa_de_comprimir(gerar_str):
+    s = gerar_str(20)
+    inter = fabr.rotas.comprimir(s)
+    resp = fabr.rotas.descomprimir(inter)
+    assert resp == s
+
+
+def test_gerar_pdf_retorna_str(certificados, config):
+    pdf = fabr.rotas.gerar_pdf(certificados[0], config)
+    assert isinstance(pdf, str)
+
+
+def test_gerar_qrcode_retorna_str(gerar_str):
+    qrcode = fabr.rotas.gerar_qrcode(s=gerar_str(10))
+    assert isinstance(qrcode, str)

@@ -3,8 +3,9 @@ import datetime as dt
 import functools
 import logging
 from collections.abc import Iterator
-from typing import Literal, TypeAlias
+from typing import Annotated, Literal, TypeAlias
 
+import fastapi
 import sqlalchemy as sa
 import sqlalchemy.orm
 from sqlalchemy import ForeignKey, String
@@ -26,7 +27,21 @@ Conteudo: TypeAlias = dict[str, str | int | float | dt.date]
 
 
 class Base(DeclarativeBase):
-    pass
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    def __repr__(self) -> str:
+        cls_name = self.__class__.__name__
+        return f'{cls_name}(id={self.id})'
+
+    def asdict(
+        self,
+        excluir: set[str] | list[str] | None = None,
+    ) -> dict[str, str | int | float | None | dt.date]:
+        if excluir is None:
+            excluir = {'_sa_instance_state', 'id'}
+        excluir = set(excluir)
+        d = self.__dict__
+        return {k: v for k, v in d.items() if k not in excluir}
 
 
 class Modelo(Base):
@@ -49,7 +64,6 @@ class Modelo(Base):
 
     __tablename__ = 'modelo'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(100))
     resumo: Mapped[str] = mapped_column(index=True)
     htmlzip: Mapped[str] = mapped_column(String(1024 * 100))
@@ -58,6 +72,10 @@ class Modelo(Base):
 
 class Certificado(Base):
     """
+    codigo: str
+        Código único do certificado.
+        Composto de exatamente 12 caracteres alfa numéricos.
+
     data: dt.date
         Data do certificado
         Não necessariamente é a mesma data na qual o certificado foi emitido
@@ -78,10 +96,9 @@ class Certificado(Base):
 
     __tablename__ = 'certificado'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    resumo: Mapped[str] = mapped_column(index=True)
-    model_id: Mapped[int] = mapped_column(ForeignKey('modelo.id'))
-    model: Mapped[Modelo] = relationship()
+    codigo: Mapped[str] = mapped_column(String(12), index=True, unique=True)
+    modelo_id: Mapped[int] = mapped_column(ForeignKey('modelo.id'))
+    modelo: Mapped[Modelo] = relationship()
     data: Mapped[dt.date] = mapped_column(index=True)
     conteudo: Mapped[Conteudo] = mapped_column(sa.JSON)
 
@@ -133,3 +150,11 @@ def criar_sessao(
         yield sessao
     finally:
         sessao.close()
+
+
+def sessao_deps() -> Iterator[Session]:
+    with criar_sessao() as sess:
+        yield sess
+
+
+Sessao = Annotated[Session, fastapi.Depends(sessao_deps)]
