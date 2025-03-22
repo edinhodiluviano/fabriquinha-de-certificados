@@ -1,0 +1,10 @@
+AMBIENTE=teste
+URL=localhost
+URL_BASE=http://localhost:8000
+TLS_EMAIL=meuemail@exemplo.com
+
+POSTGRES_HOST=localhost
+POSTGRES_DB=postgres
+POSTGRES_USER=user
+POSTGRES_PASSWORD=pwd
+POSTGRES_POOL_SIZE=5
