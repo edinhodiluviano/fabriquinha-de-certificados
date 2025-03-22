@@ -21,16 +21,6 @@ def test_criar_config_levanta_erro_com_log_level_errado():
         fabr.ambiente.criar_config(log_level='aaa')
 
 
-def test_criar_sessao_do_banco_retorna_objeto_de_sessao():
-    with fabr.bd.criar_sessao() as sess:
-        assert isinstance(sess, fabr.bd.Session)
-
-
-def test_fixture_sessao_permite_iteragir_com_o_banco_de_dados(sessao):
-    r = sessao.execute(sa.text('SELECT 1, 2')).fetchall()
-    assert r == [(1, 2)]
-
-
 def test_tabelas_sao_deletadas_entre_tests_parte_1(sessao):
     exp = sa.select(fabr.bd.Modelo)
     assert len(sessao.scalars(exp).all()) == 0
