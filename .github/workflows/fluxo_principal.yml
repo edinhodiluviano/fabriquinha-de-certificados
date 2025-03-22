@@ -43,6 +43,7 @@ jobs:
           source .venv/bin/activate
           pip install uv
           uv sync
+          cp env_exemplo .env
 
       - name: Executa o container com o banco de dados
         run: docker compose up --build -d database
@@ -50,5 +51,5 @@ jobs:
       - name: Executa os testes
         run: |
           source .venv/bin/activate
-          source env_exemplo
+          source .env
           bash run-tests.sh
