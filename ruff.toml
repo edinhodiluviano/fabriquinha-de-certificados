@@ -1,1 +1,71 @@
-/home/edinho/vms/ruff.toml
+line-length = 79
+
+[format]
+quote-style = "single"
+docstring-code-format = true
+
+[lint]
+select = ["ALL"]
+
+ignore = [
+    "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
+    "COM812",   # Trailing comma missing
+    "C408",     # Unnecessary `dict()` call (rewrite as a literal)
+    "D107",     # Missing docstring in `__init__`
+    "D202",     # No blank lines allowed after function docstring
+    "D203",     # one-blank-line-before-class
+    "D212",     # multi-line-summary-second-line
+    "E731",     # Checks for lambda expressions which are assigned to a variable.
+    "FA102",    # Missing `from __future__ import annotations`, but uses PEP 604 union
+    "G004",     # Logging statement uses f-string
+    "PLR2004",  # Magic value used in comparison, consider replacing with a constant variable
+    "PTH123",   # `open()` should be replaced by `Path.open()`
+    "Q002",     # Double quote docstring found but single quotes preferred
+    "RET504",   # Unnecessary variable assignment before `return` statement
+    "TC002",    # Move third-party import into a type-checking block
+    "TC003"     # Move standard library import into a type-checking block
+]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "venv",
+]
+
+flake8-quotes.inline-quotes = "single"
+flake8-quotes.docstring-quotes = "single"
+
+[lint.mccabe]
+max-complexity = 5
+
+[lint.per-file-ignores]
+"tests/**.py" = [
+    "D",
+    "ANN",
+    "S101",
+    "PT003",   # `scope='function'` is implied in `@pytest.fixture()`
+    "SLF001",  # Private member accessed
+    "S311",    # Standard pseudo-random generators aren't good for cryptography
+]
+"*/__init__.py" = ["D"]
+
+[lint.isort]
+lines-after-imports = 2
