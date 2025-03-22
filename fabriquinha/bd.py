@@ -240,8 +240,7 @@ class Certificado(Base):
         return cert
 
     def to_pdf(self, config: fabr.ambiente.Config) -> str:
-        url_inter = urljoin(config.url_base, 'v')
-        url_validacao = urljoin(url_inter, self.codigo)
+        url_validacao = urljoin(config.url_base, 'v/' + self.codigo)
         qrcode = _gerar_qrcode(url_validacao)
 
         contexto = {
