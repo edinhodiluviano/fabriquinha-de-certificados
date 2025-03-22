@@ -1,0 +1,54 @@
+name: Fluxo de testes automatizados
+on: ['push', 'pull_request', 'workflow_dispatch']
+jobs:
+  automated-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        python-version: ['3.13']
+
+    name: Configura o python ${{ matrix.python-version }} no ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - run: echo "Esse trabalho foi ativado automaticamente pelo evento ${{ github.event_name }}"
+
+      - run: echo "Esse trabalho esta sendo executado num servidor ${{ runner.os }}"
+      - run: echo "O nome da branch é ${{ github.ref }} e o repositório é ${{ github.repository }}."
+
+      - name: Busca o código no repositório
+        uses: actions/checkout@v3
+
+      - name: Configura o python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Valida a versão do python
+        run: |
+          pythonVersion=$(python --version 2>&1)
+          if [[ $pythonVersion == "Python ${{ matrix.python-version }}"* ]];
+          then
+            echo "A versão atual do python é $pythonVersion."
+          else
+            echo "A versão atual do python é $pythonVersion; mas a versão esperada é ${{ matrix.python-version }}"
+            exit 1
+          fi
+
+      - name: Instala as dependencias
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install uv
+          uv sync
+
+      - name: Executa o container com o banco de dados
+        run: docker compose up --build -d database
+
+      - name: Executa os testes
+        run: |
+          source .venv/bin/activate
+          source env_exemplo
+          bash run-tests.sh
