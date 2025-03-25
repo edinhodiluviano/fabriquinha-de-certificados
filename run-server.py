@@ -20,4 +20,4 @@ if __name__ == '__main__':
     alembic.config.main(argv=alembic_args)
 
     # executar o servidor
-    uvicorn.run(fabr.main.app, host='0.0.0.0', port=8000)
+    uvicorn.run(fabr.main.app, host='0.0.0.0', port=8000, workers=2)
