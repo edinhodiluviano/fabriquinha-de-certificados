@@ -82,12 +82,17 @@ def cliente(config):
 
 
 @pytest.fixture
-def modelo(sessao):
-    htmlzip = 'eJyNVNFu0zAUfd9X3AWhgUSaVlsZpGkFAsQjleCFJ3QTu443J/Zsp1uJ8jF8Cz+GHac0rFRa+9Dre22fc889LmTnH798+PZ9/QlKW4nV2Vk2/AJkJUWycoELjd0J2mf9551CRqEdVgCG/6QpvJ+DwJqYAhVd/K1VqBmvYytVCrPJvKiOSoJu7Kma5qw8WcyltbJKYTqudnuSuSS7Eccci1umZVOTmFeOfgqNFi8ueMV+MK7F5Eaxi5cHiOw8jt0VmlAd982nYKTgZAFxvDpcGjYUUkidwrOr6zfX+dsjJhMhmRxRIdwogbsUciGL2xN6YGPlKTn+rd1zYssULufPj4AtfbBjZL+OUXBWp1DQ2lJ9uGbfxOXUfw/5jaxtvMGKC8d4SzXBGo9bvNOFJGNPbIRER7VnvBgJFkY2O6TclZYXKPa8wpZjBC2JM9aTEaZPRRg6DB6eTdXDI+gsGczvw/AkfOjtNTyIzJkIjC6WUWmtMmmSaLyfMG7LJm8Mdco4pWs7KWSVMN2oXWxU4j2RVGjcDPo47isTVbMICoHGLCOfjvYYap/tZxqtPutmvYu/rt0cXXcb1x/cNTRL1PBiy9mjA21ruW0E6q5zfcxW/7926H2NXjKuZANEAt06+s5HbQi6zpmlgsJ5EqGU+vcvzRH89FvSaCzQ76il8zn6MxU3xqcGNR3BkWwDerBPFFQkaDHtH2lyoyhb5Gjo66tXbRt2dd1AM8P98eCNCEpNN8uobbdu0iQQ8Y2PllmCAT9LwgSdFv0f3h/Qq3HO'
-    m = fabr.bd.Modelo(
+def html():
+    with open('tests/test.html') as f:
+        c = f.read()
+    return c
+
+
+@pytest.fixture
+def modelo(html, sessao):
+    m = fabr.bd.Modelo.novo(
         nome='d',
-        resumo='e',
-        htmlzip=htmlzip,
+        html=html,
         emissora='GruPy-SP',
     )
     sessao.add(m)

@@ -64,9 +64,14 @@ def test_descomprimir_e_inversa_de_comprimir(gerar_str):
     assert resp == s
 
 
-def test_gerar_pdf_retorna_str(certificados, config):
+def test_gerar_pdf_retorna_bytes(certificados, config):
     pdf = certificados[0].to_pdf(config)
-    assert isinstance(pdf, str)
+    assert isinstance(pdf, bytes)
+
+
+def test_gerar_png_retorna_str(certificados, config):
+    png = certificados[0].to_png(config)
+    assert isinstance(png, str)
 
 
 def test_gerar_qrcode_retorna_str(gerar_str):
@@ -114,3 +119,18 @@ def test_novo_certificado(modelo):
     assert cert.conteudo == dict(a=1)
     assert isinstance(cert.codigo, str)
     assert len(cert.codigo) == 12
+
+
+def test_a():
+    modelo = fabr.bd.Modelo.novo(
+        nome='a',
+        html='a',
+        emissora='PyLadies',
+    )
+    cert = fabr.bd.Certificado.novo(
+        modelo=modelo,
+        data=dt.date(2020, 1, 1),
+        conteudo={'a': 42},
+    )
+    assert isinstance(cert, fabr.bd.Certificado)
+    assert cert.conteudo == dict(a=42)

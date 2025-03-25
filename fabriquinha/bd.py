@@ -12,6 +12,7 @@ from typing import Annotated, Literal, Self, TypeAlias
 from urllib.parse import urljoin
 
 import fastapi
+import pymupdf
 import qrcode
 import sqlalchemy as sa
 import sqlalchemy.orm
@@ -239,7 +240,7 @@ class Certificado(Base):
             cert = None
         return cert
 
-    def to_pdf(self, config: fabr.ambiente.Config) -> str:
+    def to_pdf(self, config: fabr.ambiente.Config) -> bytes:
         url_validacao = urljoin(config.url_base, 'v/' + self.codigo)
         qrcode = _gerar_qrcode(url_validacao)
 
@@ -260,6 +261,13 @@ class Certificado(Base):
                 pdf_variant='pdf/a-3u',
             )
         )
-        pdf_b64 = base64.b64encode(pdf_bytes)
-        pdf_b64_str = pdf_b64.decode('utf8')
-        return pdf_b64_str
+        return pdf_bytes
+
+    def to_png(self, config: fabr.ambiente.Config) -> str:
+        pdf_bytes = self.to_pdf(config=config)
+        doc = pymupdf.Document(stream=pdf_bytes)  # type: ignore[no-untyped-call]
+        pagina = next(iter(doc))
+        pixels = pagina.get_pixmap()  # type: ignore[attr-defined]
+        png_bytes = pixels.tobytes(output='png')
+        b64_str = base64.b64encode(png_bytes).decode('utf8')
+        return b64_str

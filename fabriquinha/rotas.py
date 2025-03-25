@@ -1,6 +1,13 @@
+import io
+
 import fastapi
 from fastapi import Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+    Response,
+    StreamingResponse,
+)
 from fastapi.templating import Jinja2Templates
 
 import fabriquinha as fabr
@@ -38,10 +45,38 @@ def get_validar(
     context = dict(
         certificado=cert.asdict(),
         emissora=cert.modelo.emissora,
-        pdf=cert.to_pdf(config),
+        png=cert.to_png(config),
     )
     return htmls.TemplateResponse(
         request=req,
         name='validar-certificado.html',
         context=context,
+    )
+
+
+@roteador.get(
+    '/download/{codigo}.pdf',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_class=StreamingResponse,
+)
+def get_download(
+    req: Request,
+    codigo: str,
+    sessao: fabr.bd.Sessao,
+    config: fabr.ambiente.ConfigDeps,
+) -> Response:
+    cert = fabr.bd.Certificado.buscar(sessao, codigo)
+
+    if cert is None:
+        return RedirectResponse(url=f'/v/{codigo}', status_code=302)
+
+    pdf_bytes = cert.to_pdf(config=config)
+    pdf_stream = io.BytesIO(pdf_bytes)
+    pdf_stream.seek(0)
+
+    cabecalho = {'Content-Disposition': 'attachment; filename=certificado.pdf'}
+    return StreamingResponse(
+        pdf_stream,
+        media_type='application/pdf',
+        headers=cabecalho,
     )

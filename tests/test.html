@@ -1,0 +1,79 @@
+ <!DOCTYPE html>
+
+<html>
+
+  <head>
+    <style>
+
+      @page {
+        size: A5 landscape;
+        margin-top: 1.0cm;
+        margin-left: 1.0cm;
+        margin-right: 1.0cm;
+        margin-bottom: 0.5cm;
+      }
+
+      .caixa {
+        position: absolute;
+        top: 0px;
+        bottom: 20px;
+        left: 0px;
+        right: 0px;
+        border: solid;
+        color: #4787b9;
+        border-radius: 3px;
+      }
+
+      .logo {
+        display: block;
+        margin-top: 0.5cm;
+        margin-left: auto;
+        margin-right: auto;
+        width: 35%
+      }
+
+      .texto {
+        text-align: center;
+        color: #303030;
+        font-family: verdana;
+      }
+
+      .qrcode {
+        position: absolute;
+        bottom: 60px;
+        right: 50px;
+        width: 90px;
+        height: 90px;
+      }
+
+      .rodape {
+        position: absolute;
+        bottom: 50px;
+        right: 60px;
+        font-size: 8px;
+        text-align: right;
+      }
+
+    </style>
+  </head>
+
+  <body>
+
+    <div class="caixa"> </div>
+    <img class="logo" src="https://raw.githubusercontent.com/grupy-sp/logo/master/logo-grupy.png">
+
+    <p class="texto">GruPy-SP certifica que</p>
+    <h2 class="texto">{{titular}}</h2>
+    <p class="texto">
+    Participou do evento <strong>{{ evento }}</strong>
+    com carga horária de <strong>{{ duracao }}</strong>
+    no dia <strong>{{ data.strftime('%d/%m/%Y') }}</strong>
+    </p>
+
+
+    <img class="qrcode" src="data:image/jpeg;base64,{{qrcode}}">
+    <a class="rodape" href="{{url_validacao}}">{{url_validacao}}</a>
+
+
+  </body>
+</html>

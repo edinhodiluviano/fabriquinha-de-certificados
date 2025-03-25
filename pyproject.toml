@@ -12,6 +12,7 @@ dependencies = [
     "psycopg>=3.2.5",
     "pydantic>=2.10.6",
     "pydantic-settings>=2.8.1",
+    "pymupdf>=1.25.4",
     "qrcode[pil]>=8.0",
     "sqlalchemy>=2.0.39",
     "weasyprint>=64.1",
@@ -33,7 +34,12 @@ log_level = "DEBUG"
 markers = [
     'integration: mark a test as an integration test (requires local db)',
 ]
+filterwarnings = [
+    'ignore:builtin type SwigPyObject has no __module__ attribute:DeprecationWarning',
+    'ignore:builtin type SwigPyPacked has no __module__ attribute:DeprecationWarning',
+    'ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning',
+]
 
 [[tool.mypy.overrides]]
-module = ["weasyprint.*"]
+module = ["weasyprint.*", "pymupdf.*"]
 follow_untyped_imports = true
