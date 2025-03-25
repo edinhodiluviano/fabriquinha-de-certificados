@@ -1,17 +1,10 @@
-x-common: &commons
-    deploy:
-        resources:
-            limits:
-                cpus: '0.5'
-                memory: 256MB
-
-
 services:
     proxy:
         platform: linux/amd64
         container_name: proxy
         image: traefik:v3.3.4
         command: >
+            --ping=true
             --log.level=INFO
             --api.insecure=true
             --providers.docker.exposedbydefault=false
@@ -24,7 +17,7 @@ services:
             --certificatesresolvers.resolver.acme.email=${TLS_EMAIL}
             --certificatesresolvers.resolver.acme.storage=/acme/acme.json
             --certificatesresolvers.resolver.acme.httpchallenge.entrypoint=web
-            # --certificatesresolvers.resolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+            --certificatesresolvers.resolver.acme.caserver=${ACME_SERVER}
         ports:
             - "0.0.0.0:80:80"
             - "0.0.0.0:443:443"
@@ -33,7 +26,15 @@ services:
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
             - "./proxy/acme:/acme"
             # - "./traefik.yml:/traefik.yml:ro"
-        <<: *commons
+        healthcheck:
+            test: ["CMD", "traefik", "healthcheck", "--ping"]
+            interval: 5s
+            retries: 15
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 50MB
 
     api:
         platform: linux/amd64
@@ -58,7 +59,11 @@ services:
             test: ["CMD", "curl", "-A", "curl-healthcheck", "localhost:8000/ping"]
             interval: 5s
             retries: 15
-        <<: *commons
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 160MB
 
     database:
         platform: linux/amd64
@@ -74,4 +79,8 @@ services:
             retries: 15
         volumes:
             - ./database/data:/var/lib/postgresql/data
-        <<: *commons
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 40MB

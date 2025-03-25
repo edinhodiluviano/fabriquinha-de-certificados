@@ -1,6 +1,7 @@
 AMBIENTE=teste
 URL=localhost
 URL_BASE=http://localhost:8000
+ACME_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
 TLS_EMAIL=meuemail@exemplo.com
 
 POSTGRES_HOST=localhost
