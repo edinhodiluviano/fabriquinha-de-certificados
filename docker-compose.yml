@@ -1,3 +1,11 @@
+x-common: &commons
+    deploy:
+        resources:
+            limits:
+                cpus: '0.5'
+                memory: 256MB
+
+
 services:
     proxy:
         platform: linux/amd64
@@ -25,6 +33,7 @@ services:
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
             - "./proxy/acme:/acme"
             # - "./traefik.yml:/traefik.yml:ro"
+        <<: *commons
 
     api:
         platform: linux/amd64
@@ -49,6 +58,7 @@ services:
             test: ["CMD", "curl", "-A", "curl-healthcheck", "localhost:8000/ping"]
             interval: 5s
             retries: 15
+        <<: *commons
 
     database:
         platform: linux/amd64
@@ -64,3 +74,4 @@ services:
             retries: 15
         volumes:
             - ./database/data:/var/lib/postgresql/data
+        <<: *commons
