@@ -11,7 +11,7 @@ import uvicorn
 import fabriquinha as fabr
 
 
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig('logging.conf', disable_existing_loggers=True)
 
 
 if __name__ == '__main__':
@@ -20,4 +20,9 @@ if __name__ == '__main__':
     alembic.config.main(argv=alembic_args)
 
     # executar o servidor
-    uvicorn.run('fabriquinha.main:app', host='0.0.0.0', port=8000, workers=1)
+    uvicorn.run(
+        'fabriquinha.main:app',
+        host='0.0.0.0',
+        port=8000,
+        workers=1,
+    )
