@@ -63,7 +63,7 @@ services:
             resources:
                 limits:
                     cpus: '0.5'
-                    memory: 300MB
+                    memory: 400MB
 
     database:
         platform: linux/amd64
