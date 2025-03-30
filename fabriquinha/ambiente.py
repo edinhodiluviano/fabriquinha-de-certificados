@@ -43,4 +43,9 @@ def criar_config(
     return config
 
 
-ConfigDeps = Annotated[Config, fastapi.Depends(criar_config)]
+def config_deps() -> Config:
+    config = criar_config()
+    return config
+
+
+ConfigDeps = Annotated[Config, fastapi.Depends(config_deps)]
