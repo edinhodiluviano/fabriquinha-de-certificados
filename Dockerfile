@@ -18,6 +18,5 @@ RUN uv sync --frozen --no-dev
 
 # copy project
 COPY logging.conf /app/
-COPY alembic.ini /app/
 COPY run-server.py /app/
 COPY fabriquinha /app/fabriquinha
