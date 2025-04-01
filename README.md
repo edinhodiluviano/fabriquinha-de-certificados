@@ -63,8 +63,8 @@ uv sync --frozen --no-dev
 
 # Execução no Debian 12 (bookworm)
 ### Banco de dados
-O processo de instalação normal do postgres via apt ja deve ter inicializado o postgres na máquina.  
-Um passo que você deve lembrar de fazer é criar os usuários e senhas do postgres de acordo com o seu arquivo `.env`.
+O processo de instalação normal do postgres via apt ja deve ter inicializado o postres na máquina.  
+Um passo que você deve lembrar de fazer é criar os usuários e senhas do posgres de acordo com o seu arquivo `.env`.
 
 ### Proxy Reverso
 ```
