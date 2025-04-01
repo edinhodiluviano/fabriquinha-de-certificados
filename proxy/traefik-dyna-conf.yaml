@@ -1,0 +1,12 @@
+http:
+    routers:
+        myrouter:
+            rule: 'Host(`{{ env "URL" }}`)'
+            service: myservice
+            tls:
+                certresolver: resolver
+    services:
+        myservice:
+            loadBalancer:
+                servers:
+                    - url: 'http://{{ env "API_SERVER_ADDRESS" }}:8000'
