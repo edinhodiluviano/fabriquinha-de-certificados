@@ -16,7 +16,13 @@ logging.config.fileConfig('logging.conf', disable_existing_loggers=True)
 
 if __name__ == '__main__':
     # aplicar migrações
-    alembic_args = ['--raiseerr', 'upgrade', 'head']
+    alembic_args = [
+        '--config',
+        'fabriquinha/migracoes/alembic.ini',
+        '--raiseerr',
+        'upgrade',
+        'head',
+    ]
     alembic.config.main(argv=alembic_args)
 
     # executar o servidor
