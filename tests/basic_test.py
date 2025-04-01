@@ -51,3 +51,9 @@ def test_get_download_com_codigo_inexistente(certificados, cliente):
     assert 'não encontrado' in resp.text
     assert len(resp.history) == 1
     assert resp.history[0].status_code == 302
+
+
+def test_get_raiz(cliente):
+    resp = cliente.get('/')
+    assert resp.status_code == 200
+    assert 'Validador de Certificados' in resp.text

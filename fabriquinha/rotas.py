@@ -23,6 +23,22 @@ def ping() -> str:
 
 
 @roteador.get(
+    '/',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_class=HTMLResponse,
+)
+def get_raiz(
+    req: Request,
+    config: fabr.ambiente.ConfigDeps,
+) -> HTMLResponse:
+    return htmls.TemplateResponse(
+        request=req,
+        name='raiz.html',
+        context={},
+    )
+
+
+@roteador.get(
     '/v/{codigo}',
     status_code=fastapi.status.HTTP_200_OK,
     response_class=HTMLResponse,
