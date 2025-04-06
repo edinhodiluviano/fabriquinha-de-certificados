@@ -57,3 +57,17 @@ def test_get_raiz(cliente):
     resp = cliente.get('/')
     assert resp.status_code == 200
     assert 'Validador de Certificados' in resp.text
+
+
+def test_post_html2png(cliente, html):
+    resp = cliente.post('/html2png', json={'html': html})
+    assert resp.status_code == 200, resp.text
+    assert resp.text.startswith('data:image/png;base64,')
+    assert len(resp.text) > 100
+
+
+def test_get_novo_modelo(cliente):
+    resp = cliente.get('/novo-modelo')
+    assert resp.status_code == 200
+    assert 'Visualizar Rascunho'.lower() in resp.text.lower()
+    assert 'img' in resp.text

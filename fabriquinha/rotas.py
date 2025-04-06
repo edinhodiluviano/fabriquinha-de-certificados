@@ -1,6 +1,10 @@
+import base64
 import io
+import re
 
 import fastapi
+import pymupdf
+import weasyprint
 from fastapi import Request
 from fastapi.responses import (
     HTMLResponse,
@@ -9,6 +13,7 @@ from fastapi.responses import (
     StreamingResponse,
 )
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 import fabriquinha as fabr
 
@@ -96,3 +101,53 @@ def get_download(
         media_type='application/pdf',
         headers=cabecalho,
     )
+
+
+@roteador.get(
+    '/novo-modelo',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_class=HTMLResponse,
+)
+def get_testar_html(
+    req: Request,
+    config: fabr.ambiente.ConfigDeps,
+) -> HTMLResponse:
+    # gera png como base64
+
+    context = dict(png='')
+    return htmls.TemplateResponse(
+        request=req,
+        name='testar-html.html',
+        context=context,
+    )
+
+
+class TextoHtml(BaseModel):
+    html: str
+
+
+@roteador.post(
+    '/html2png',
+    status_code=fastapi.status.HTTP_200_OK,
+    responses={200: dict(content={'image/png': {}})},
+    response_class=Response,
+)
+def post_html2png(texto_html: TextoHtml) -> Response:
+    html_inicial = texto_html.html
+
+    qrcode = fabr.bd._gerar_qrcode('a')
+    html = re.sub(r'\{\{ *?qrcode *?\}\}', qrcode, html_inicial)
+
+    pdf_bytes = bytes(
+        weasyprint.HTML(string=html).write_pdf(  # type: ignore[no-untyped-call]
+            target=None,
+            pdf_variant='pdf/a-3u',
+        )
+    )
+    doc = pymupdf.Document(stream=pdf_bytes)  # type: ignore[no-untyped-call]
+    pagina = next(iter(doc))
+    pixels = pagina.get_pixmap()  # type: ignore[attr-defined]
+    png_bytes = pixels.tobytes(output='png')
+    b64_str = base64.b64encode(png_bytes).decode('utf8')
+    src = 'data:image/png;base64,' + b64_str
+    return Response(content=src, media_type='application/octet-stream')

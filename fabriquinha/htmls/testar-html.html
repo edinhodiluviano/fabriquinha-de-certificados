@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Testar Certificado
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <img id="certificadoRascunho" src="data:image/png;base64,{{ png }}" style="width: 100%; max-width: 800px; height: auto; border: 5px solid #B0B0B0; box-sizing: border-box; border-style: double;" alt="Rascunho">
+    </div>
+
+    <br><br><br>
+
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="input-group" >
+                <div class="input-group-prepend">
+                    <span class="input-group-text">HTML</span>
+                </div>
+                <textarea id="textohtml" class="form-control"  style="font-size: 10px; max-width: 1200px; height: 400px;" aria-label="html"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <br>
+    <a class="btn btn-primary" onclick="testarHtml()" >Visualizar rascunho</a>
+    <br><br><br>
+
+
+<script>
+    function testarHtml() {
+        var textohtml = document.getElementById("textohtml").value;
+
+        fetch('/html2png', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({'html': textohtml})
+        })
+        .then(resposta => resposta.text())
+        .then(dados => {
+            console.log(dados);
+            document.getElementById('certificadoRascunho').src = dados;
+        })
+        .catch(erro => {
+            console.error('Erro na requisição:', erro);
+        });
+    }
+
+    document.getElementById('textohtml')
+        .addEventListener(
+            'keydown',
+            (event) => {
+                if(event.ctrlKey && event.key == "Enter") {
+                    testarHtml();
+                }
+            }
+        );
+</script>
+
+
+{% endblock %}
