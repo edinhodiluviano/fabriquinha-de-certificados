@@ -125,6 +125,13 @@ def usuaria(sessao, gerar_str):
 
 
 @pytest.fixture
+def admin(cliente, usuaria):
+    verificar_login = fabr.rotas.verificar_login
+    cliente.app.dependency_overrides[verificar_login] = lambda: usuaria
+    return usuaria
+
+
+@pytest.fixture
 def gerar_str():
     s = 'abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789'
     return lambda n: ''.join(random.choices(s, k=n))
