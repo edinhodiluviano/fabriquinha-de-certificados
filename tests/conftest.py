@@ -113,6 +113,18 @@ def modelo(html, sessao):
 
 
 @pytest.fixture
+def usuaria(sessao, gerar_str):
+    u = fabr.bd.Usuaria.novo(
+        nome=gerar_str(20),
+        senha='senha',
+        teste=True,
+    )
+    sessao.add(u)
+    sessao.commit()
+    return u
+
+
+@pytest.fixture
 def gerar_str():
     s = 'abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789'
     return lambda n: ''.join(random.choices(s, k=n))

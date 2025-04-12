@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3">
+      </div>
+
+      <div class="col-md-6">
+        <div class="card-body" style="background-color: #e6e6e6;">
+
+          <div class="row justify-content-center">
+            <div class="col-4">
+              <label for="codigo" class="form-label">Login:</label>
+            </div>
+          </div>
+          <form action="/login" method="POST">
+
+            <div class="row justify-content-center">
+              <div class="col-4">
+                <input style="width: 150px; text-align: center;" type="text" id="nome" class="form-control " name="nome" placeholder="nome" required autofocus>
+              </div>
+            </div>
+
+            <div class="row justify-content-center">
+              <div class="col-4">
+                <input style="width: 150px; text-align: center;" type="password" id="senha" class="form-control" name="senha" placeholder="senha" required>
+              </div>
+            </div>
+
+            <div class="row justify-content-center">
+              <div class="col-4">
+                <input style="width: 150px;" type="submit" class="btn btn-primary" value="Entrar" onclick="login()">
+              </div>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+{% endblock %}

@@ -11,6 +11,7 @@ from collections.abc import Iterator
 from typing import Annotated, Literal, Self, TypeAlias
 from urllib.parse import urljoin
 
+import argon2
 import fastapi
 import pymupdf
 import qrcode
@@ -109,6 +110,44 @@ class Base(DeclarativeBase):
         excluir = set(excluir)
         d = self.__dict__
         return {k: v for k, v in d.items() if k not in excluir}
+
+
+class Usuaria(Base):
+    """
+    nome: str
+        Nome da pessoa usuária.
+
+    senha: str
+        Hash da senha.
+    """
+
+    __tablename__ = 'usuaria'
+
+    nome: Mapped[str] = mapped_column(String(100), index=True, unique=True)
+    senha: Mapped[str] = mapped_column(String(100))
+
+    @classmethod
+    def novo(cls, nome: str, senha: str, teste: bool = False) -> Self:
+        if teste:
+            ph = argon2.PasswordHasher(time_cost=3, memory_cost=100)
+        else:
+            ph = argon2.PasswordHasher()
+        hash_da_senha = ph.hash(senha)
+        o = cls(nome=nome, senha=hash_da_senha)
+        return o
+
+    def verifica_senha(self, senha_dada: str) -> bool:
+        try:
+            argon2.PasswordHasher().verify(self.senha, senha_dada)
+        except argon2.exceptions.VerifyMismatchError:
+            return False
+        return True
+
+    @classmethod
+    def buscar(cls, sessao: Sessao, nome: str) -> Self | None:
+        stmt = sa.select(cls).where(cls.nome == nome)
+        o = sessao.execute(stmt).scalars().one_or_none()
+        return o
 
 
 class Modelo(Base):

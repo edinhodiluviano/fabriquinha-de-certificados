@@ -29,6 +29,7 @@ class Config(BaseSettings):
     log_level: Literal['DEBUG', 'INFO', 'WARNING']
     banco: Banco
     url_base: str = Field(alias='URL_BASE')
+    segredo: SecretStr = Field(alias='SECRET')
 
 
 def criar_config(

@@ -1,13 +1,17 @@
 import base64
+import datetime as dt
 import io
 import re
+from typing import Annotated, Self
 
 import fastapi
+import jwt
 import pymupdf
 import weasyprint
-from fastapi import Request
+from fastapi import Form, Request
 from fastapi.responses import (
     HTMLResponse,
+    JSONResponse,
     RedirectResponse,
     Response,
     StreamingResponse,
@@ -151,3 +155,99 @@ def post_html2png(texto_html: TextoHtml) -> Response:
     b64_str = base64.b64encode(png_bytes).decode('utf8')
     src = 'data:image/png;base64,' + b64_str
     return Response(content=src, media_type='application/octet-stream')
+
+
+class TokenRequest(BaseModel):
+    nome: str
+    senha: str
+
+
+@roteador.post(
+    '/login',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_class=JSONResponse,
+)
+def post_login(
+    token_request: Annotated[TokenRequest, Form()],
+    sessao: fabr.bd.Sessao,
+    config: fabr.ambiente.ConfigDeps,
+) -> RedirectResponse:
+    usuaria = fabr.bd.Usuaria.buscar(sessao=sessao, nome=token_request.nome)
+    if usuaria is None or usuaria.verifica_senha(token_request.senha) is False:
+        print('autorizacao ruim' + '=' * 50)
+        return RedirectResponse(
+            url='/login',
+            status_code=fastapi.status.HTTP_303_SEE_OTHER,
+        )
+
+    print('autorizacao legal' + '=' * 50)
+    vencimento = dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=48)
+    dados = dict(nome=usuaria.nome)
+    token = jwt.encode(
+        dados,
+        config.segredo.get_secret_value(),
+        algorithm='HS256',
+    )
+
+    resp = RedirectResponse(
+        url='/u',
+        status_code=fastapi.status.HTTP_303_SEE_OTHER,
+    )
+    resp.set_cookie(
+        key='Authorization',
+        value=token,
+        expires=vencimento,
+        secure=True,
+        httponly=True,
+        samesite='strict',
+    )
+    return resp
+
+
+@roteador.get(
+    '/login',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_class=HTMLResponse,
+)
+def get_login(req: Request) -> HTMLResponse:
+    return htmls.TemplateResponse(
+        request=req,
+        name='login.html',
+    )
+
+
+def verificar_login(
+    requisicao: Request,
+    config: fabr.ambiente.ConfigDeps,
+    sessao: fabr.bd.Sessao,
+) -> fabr.bd.Usuaria | RedirectResponse:
+    token = requisicao.cookies.get('Authorization')
+    try:
+        dados = jwt.decode(
+            token,
+            config.segredo.get_secret_value(),
+            algorithms=['HS256'],
+        )
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_303_SEE_OTHER,
+            headers=dict(location='/login'),
+        )
+    usuaria = fabr.bd.Usuaria.buscar(sessao=sessao, nome=dados['nome'])
+    return usuaria
+
+
+LoginDeps = Annotated[fabr.bd.Usuaria, fastapi.Depends(verificar_login)]
+
+
+@roteador.get(
+    '/u',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_class=HTMLResponse,
+)
+def get_u(req: Request, usuaria: LoginDeps) -> HTMLResponse:
+    return htmls.TemplateResponse(
+        request=req,
+        name='u.html',
+        context=dict(usuaria=usuaria),
+    )

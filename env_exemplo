@@ -2,6 +2,7 @@ AMBIENTE=teste
 URL=localhost
 URL_BASE=https://localhost
 API_SERVER_ADDRESS=api
+SECRET=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 # seção do postgres
 POSTGRES_HOST=localhost
