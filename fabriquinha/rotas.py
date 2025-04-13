@@ -31,6 +31,30 @@ def ping() -> str:
     return 'pong'
 
 
+def verificar_login(
+    requisicao: Request,
+    config: fabr.ambiente.ConfigDeps,
+    sessao: fabr.bd.Sessao,
+) -> fabr.bd.Usuaria | RedirectResponse:
+    token = requisicao.cookies.get('Authorization')
+    try:
+        dados = jwt.decode(
+            token,
+            config.segredo.get_secret_value(),
+            algorithms=['HS256'],
+        )
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_303_SEE_OTHER,
+            headers=dict(location='/login'),
+        )
+    usuaria = fabr.bd.Usuaria.buscar(sessao=sessao, nome=dados['nome'])
+    return usuaria
+
+
+LoginDeps = Annotated[fabr.bd.Usuaria, fastapi.Depends(verificar_login)]
+
+
 @roteador.get(
     '/',
     status_code=fastapi.status.HTTP_200_OK,
@@ -114,6 +138,7 @@ def get_download(
 )
 def get_testar_html(
     req: Request,
+    usuaria: LoginDeps,
     config: fabr.ambiente.ConfigDeps,
 ) -> HTMLResponse:
     # gera png como base64
@@ -214,30 +239,6 @@ def get_login(req: Request) -> HTMLResponse:
         request=req,
         name='login.html',
     )
-
-
-def verificar_login(
-    requisicao: Request,
-    config: fabr.ambiente.ConfigDeps,
-    sessao: fabr.bd.Sessao,
-) -> fabr.bd.Usuaria | RedirectResponse:
-    token = requisicao.cookies.get('Authorization')
-    try:
-        dados = jwt.decode(
-            token,
-            config.segredo.get_secret_value(),
-            algorithms=['HS256'],
-        )
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_303_SEE_OTHER,
-            headers=dict(location='/login'),
-        )
-    usuaria = fabr.bd.Usuaria.buscar(sessao=sessao, nome=dados['nome'])
-    return usuaria
-
-
-LoginDeps = Annotated[fabr.bd.Usuaria, fastapi.Depends(verificar_login)]
 
 
 @roteador.get(

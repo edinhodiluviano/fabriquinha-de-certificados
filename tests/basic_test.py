@@ -68,7 +68,14 @@ def test_post_html2png(cliente, html):
     assert len(resp.text) > 100
 
 
-def test_get_novo_modelo(cliente):
+def test_get_novo_modelo_nao_logado_redireciona_para_login(cliente):
+    resp = cliente.get('/novo-modelo', follow_redirects=False)
+    assert resp.status_code == 303
+    assert 'location' in resp.headers
+    assert resp.headers['location'] == '/login'
+
+
+def test_get_novo_modelo(cliente, admin):
     resp = cliente.get('/novo-modelo')
     assert resp.status_code == 200
     assert 'Visualizar Rascunho'.lower() in resp.text.lower()
