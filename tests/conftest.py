@@ -101,11 +101,23 @@ def html():
 
 
 @pytest.fixture
-def modelo(html, sessao):
+def comunidades(sessao):
+    cs = [
+        fabr.bd.Comunidade(nome='GruPy-SP'),
+        fabr.bd.Comunidade(nome='PyLadies'),
+    ]
+    sessao.add_all(cs)
+    sessao.commit()
+    return cs
+
+
+@pytest.fixture
+def modelo(comunidades, html, sessao):
     m = fabr.bd.Modelo.novo(
+        sessao=sessao,
         nome='d',
         html=html,
-        emissora='GruPy-SP',
+        comunidade='GruPy-SP',
     )
     sessao.add(m)
     sessao.commit()

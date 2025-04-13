@@ -110,7 +110,7 @@ def get_validar(
 
     context = dict(
         certificado=cert.asdict(),
-        emissora=cert.modelo.emissora,
+        emissora=cert.modelo.comunidade.nome,
         png=cert.to_png(config),
     )
     return htmls.TemplateResponse(

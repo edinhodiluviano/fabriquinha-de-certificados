@@ -8,7 +8,7 @@ import logging
 import random
 import zlib
 from collections.abc import Iterator
-from typing import Annotated, Literal, Self, TypeAlias
+from typing import Annotated, Self, TypeAlias
 from urllib.parse import urljoin
 
 import argon2
@@ -33,7 +33,6 @@ import fabriquinha as fabr
 
 logger = logging.getLogger(__name__)
 
-Emissora: TypeAlias = Literal['PyLadies', 'GruPy-SP']
 Conteudo: TypeAlias = dict[str, str | int | float | dt.date]
 
 
@@ -93,8 +92,18 @@ def sessao_deps() -> Iterator[Session]:
 
 Sessao = Annotated[Session, fastapi.Depends(sessao_deps)]
 
+convencao_de_nomes = dict(
+    ix='ix_%(column_0_label)s',
+    uq='uq_%(table_name)s_%(column_0_name)s',
+    ck='ck_%(table_name)s_%(constraint_name)s',
+    fk='fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s',
+    pk='pk_%(table_name)s',
+)
+
 
 class Base(DeclarativeBase):
+    metadata = sa.MetaData(naming_convention=convencao_de_nomes)
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     def __repr__(self) -> str:
@@ -110,6 +119,19 @@ class Base(DeclarativeBase):
         excluir = set(excluir)
         d = self.__dict__
         return {k: v for k, v in d.items() if k not in excluir}
+
+
+class Comunidade(Base):
+    __tablename__ = 'comunidade'
+
+    nome: Mapped[str] = mapped_column(String(100), index=True, unique=True)
+    modelos: Mapped[list['Modelo']] = relationship(back_populates='comunidade')
+
+    @classmethod
+    def buscar(cls, sessao: Sessao, nome: str) -> Self | None:
+        stmt = sa.select(cls).where(cls.nome == nome)
+        o = sessao.execute(stmt).scalars().one_or_none()
+        return o
 
 
 class Usuaria(Base):
@@ -163,8 +185,8 @@ class Modelo(Base):
     htmlzip: str
         html zipado para renderizar o certificado
 
-    emissora: Emissora
-        a entidade emissora do certificado
+    comunidade: Comunidade
+        a comunidade emissora do certificado
         Exemplo: PyLadies, GruPy-SP
     """
 
@@ -173,21 +195,28 @@ class Modelo(Base):
     nome: Mapped[str] = mapped_column(String(100))
     resumo: Mapped[str] = mapped_column(index=True)
     htmlzip: Mapped[str] = mapped_column(String(1024 * 100))
-    emissora: Mapped[Emissora] = mapped_column(index=True)
+    comunidade_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('comunidade.id'),
+        index=True,
+    )
+    comunidade: Mapped[Comunidade] = relationship(back_populates='modelos')
 
     @classmethod
-    def novo(cls, nome: str, html: str, emissora: Emissora) -> Self:
+    def novo(
+        cls,
+        sessao: Sessao,
+        nome: str,
+        html: str,
+        comunidade: str,
+    ) -> Self:
         r = hashlib.blake2b(html.encode('utf8'), digest_size=8).hexdigest()
         h = _comprimir(html)
-        o = cls(nome=nome, resumo=r, htmlzip=h, emissora=emissora)
-        return o
 
-    @classmethod
-    def buscar(cls, sessao: Sessao, emissora: Emissora) -> list[Self]:
-        stmt = sa.select(cls).where(cls.emissora == emissora)
-        linhas = sessao.execute(stmt).scalars().all()
-        modelos = list(linhas)
-        return modelos
+        stmt = sa.select(Comunidade).where(Comunidade.nome == comunidade)
+        comunidade_obj = sessao.execute(stmt).scalar_one()
+        comunidade_id = comunidade_obj.id
+        o = cls(nome=nome, resumo=r, htmlzip=h, comunidade_id=comunidade_id)
+        return o
 
 
 def _gerar_qrcode(s: str) -> str:
@@ -238,9 +267,6 @@ class Certificado(Base):
         No caso do evento ter mais de um dia de duração, utilize a data do
         último dia do evento.
 
-    emissora: Emissora
-        Entidade emissora do certificado (ex.: GruPy-SP, PyLadies, etc).
-
     modelo: Modelo
         Relacionamento com o modelo que deve ser utilizado para renderizar
         este certificado
@@ -287,7 +313,7 @@ class Certificado(Base):
             **self.conteudo,
             'qrcode': qrcode,
             'url_validacao': url_validacao,
-            'emissora': self.modelo.emissora,
+            'emissora': self.modelo.comunidade.nome,
             'data': self.data,
         }
 

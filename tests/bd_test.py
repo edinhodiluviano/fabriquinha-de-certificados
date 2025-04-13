@@ -16,23 +16,19 @@ def test_fixture_sessao_permite_iteragir_com_o_banco_de_dados(sessao):
 
 
 def test_tabelas_sao_deletadas_entre_tests_parte_1(sessao):
-    exp = sa.select(fabr.bd.Modelo)
+    exp = sa.select(fabr.bd.Comunidade)
     assert len(sessao.scalars(exp).all()) == 0
-    modelo = fabr.bd.Modelo(
-        nome='a', resumo='b', htmlzip='c', emissora='GruPy-SP'
-    )
-    sessao.add(modelo)
+    comunidade = fabr.bd.Comunidade(nome='GruPy-SP')
+    sessao.add(comunidade)
     sessao.commit()
     assert len(sessao.scalars(exp).all()) == 1
 
 
 def test_tabelas_sao_deletadas_entre_tests_parte_2(sessao):
-    exp = sa.select(fabr.bd.Modelo)
+    exp = sa.select(fabr.bd.Comunidade)
     assert len(sessao.scalars(exp).all()) == 0
-    modelo = fabr.bd.Modelo(
-        nome='d', resumo='e', htmlzip='f', emissora='GruPy-SP'
-    )
-    sessao.add(modelo)
+    comunidade = fabr.bd.Comunidade(nome='GruPy-SP')
+    sessao.add(comunidade)
     sessao.commit()
     assert len(sessao.scalars(exp).all()) == 1
 
@@ -79,32 +75,39 @@ def test_gerar_qrcode_retorna_str(gerar_str):
     assert isinstance(qrcode, str)
 
 
-def test_gerar_modelo_novo():
+def test_gerar_modelo_novo(sessao, comunidades):
     m = fabr.bd.Modelo.novo(
+        sessao=sessao,
         nome='nome',
         html='aaa\n',
-        emissora='GruPy-SP',
+        comunidade='GruPy-SP',
     )
+    sessao.add(m)
+    sessao.commit()
     assert m.nome == 'nome'
     assert m.htmlzip == 'eJxLTEzkAgADdwEu'
-    assert m.emissora == 'GruPy-SP'
+    assert m.comunidade.nome == 'GruPy-SP'
     assert m.resumo == 'a1c57efd1cd0c881'
 
 
-def test_buscar_modelo(modelo, sessao):
+def test_buscar_modelos(comunidades, modelo, sessao):
     novo_modelo_1 = fabr.bd.Modelo.novo(
+        sessao=sessao,
         nome=modelo.nome + 'a',
         html='aaa\n',
-        emissora=modelo.emissora,
+        comunidade=comunidades[0].nome,
     )
     novo_modelo_2 = fabr.bd.Modelo.novo(
+        sessao=sessao,
         nome=modelo.nome + 'a',
         html='aaa\n',
-        emissora='PyLadies',
+        comunidade=comunidades[1].nome,
     )
     sessao.add_all([novo_modelo_1, novo_modelo_2])
     sessao.commit()
-    modelos = fabr.bd.Modelo.buscar(sessao, modelo.emissora)
+
+    comunidade = fabr.bd.Comunidade.buscar(sessao, comunidades[0].nome)
+    modelos = comunidade.modelos
     assert modelos == [modelo, novo_modelo_1]
 
 
