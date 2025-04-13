@@ -2,7 +2,7 @@ import base64
 import datetime as dt
 import io
 import re
-from typing import Annotated, Self
+from typing import Annotated
 
 import fastapi
 import jwt
