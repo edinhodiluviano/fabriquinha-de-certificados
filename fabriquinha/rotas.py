@@ -2,7 +2,7 @@ import base64
 import datetime as dt
 import io
 import re
-from typing import Annotated
+from typing import Annotated, NoReturn
 
 import fastapi
 import jwt
@@ -44,8 +44,15 @@ def verificar_login(
     requisicao: Request,
     config: fabr.ambiente.ConfigDeps,
     sessao: fabr.bd.Sessao,
-) -> fabr.bd.Usuaria | RedirectResponse:
+) -> fabr.bd.Usuaria:
     token = requisicao.cookies.get('Authorization', '')
+
+    def redireciona_para_login() -> NoReturn:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_303_SEE_OTHER,
+            headers=dict(location='/login'),
+        )
+
     try:
         dados = jwt.decode(
             token,
@@ -53,11 +60,12 @@ def verificar_login(
             algorithms=['HS256'],
         )
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_303_SEE_OTHER,
-            headers=dict(location='/login'),
-        )
+        redireciona_para_login()
+
     usuaria = fabr.bd.Usuaria.buscar(sessao=sessao, nome=dados['nome'])
+    if usuaria is None:
+        redireciona_para_login()
+
     return usuaria
 
 
