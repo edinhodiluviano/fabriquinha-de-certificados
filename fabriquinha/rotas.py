@@ -10,6 +10,7 @@ import pymupdf
 import weasyprint
 from fastapi import Form, Request
 from fastapi.responses import (
+    FileResponse,
     HTMLResponse,
     JSONResponse,
     RedirectResponse,
@@ -29,6 +30,14 @@ htmls = Jinja2Templates(directory='fabriquinha/htmls')
 @roteador.get('/ping', status_code=fastapi.status.HTTP_200_OK)
 def ping() -> str:
     return 'pong'
+
+
+@roteador.get('/favicon.ico', include_in_schema=False)
+def get_favicon() -> FileResponse:
+    return FileResponse(
+        'fabriquinha/htmls/favicon.ico',
+        media_type='image/vnd.microsoft.icon',
+    )
 
 
 def verificar_login(

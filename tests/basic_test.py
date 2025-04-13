@@ -160,3 +160,8 @@ def test_get_u_com_admin_nao_chama_verificar_login(admin, cliente):
     with patch('fabriquinha.rotas.verificar_login') as m:
         cliente.get('/u')
         assert m.call_count == 0
+
+
+def test_get_favicon(cliente):
+    resp = cliente.get('/favicon.ico')
+    assert resp.status_code == 200
