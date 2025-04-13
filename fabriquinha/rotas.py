@@ -45,7 +45,7 @@ def verificar_login(
     config: fabr.ambiente.ConfigDeps,
     sessao: fabr.bd.Sessao,
 ) -> fabr.bd.Usuaria | RedirectResponse:
-    token = requisicao.cookies.get('Authorization')
+    token = requisicao.cookies.get('Authorization', '')
     try:
         dados = jwt.decode(
             token,
