@@ -121,16 +121,20 @@ def test_novo_certificado(modelo):
     assert len(cert.codigo) == 12
 
 
-def test_a():
-    modelo = fabr.bd.Modelo.novo(
-        nome='a',
-        html='a',
-        emissora='PyLadies',
-    )
-    cert = fabr.bd.Certificado.novo(
-        modelo=modelo,
-        data=dt.date(2020, 1, 1),
-        conteudo={'a': 42},
-    )
-    assert isinstance(cert, fabr.bd.Certificado)
-    assert cert.conteudo == dict(a=42)
+def test_usuaria_nova():
+    o = fabr.bd.Usuaria.novo(nome='aaa', senha='bbb')
+    assert isinstance(o, fabr.bd.Usuaria)
+    assert o.nome == 'aaa'
+    assert o.senha != 'bbb'
+
+
+def test_usuaria_verifica(usuaria):
+    assert usuaria.verifica_senha('senha') is True
+    assert usuaria.verifica_senha('senha_incorreta') is False
+
+
+def test_usuaria_busca(sessao, usuaria):
+    o1 = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome)
+    assert isinstance(o1, fabr.bd.Usuaria)
+    o2 = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome + 'a')
+    assert o2 is None
