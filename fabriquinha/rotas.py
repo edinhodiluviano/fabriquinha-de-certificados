@@ -132,11 +132,11 @@ def get_download(
 
 
 @roteador.get(
-    '/novo-modelo',
+    '/criar-modelo',
     status_code=fastapi.status.HTTP_200_OK,
     response_class=HTMLResponse,
 )
-def get_testar_html(
+def get_criar_modelo(
     req: Request,
     usuaria: LoginDeps,
     config: fabr.ambiente.ConfigDeps,
@@ -146,7 +146,7 @@ def get_testar_html(
     context = dict(png='')
     return htmls.TemplateResponse(
         request=req,
-        name='testar-html.html',
+        name='criar-modelo.html',
         context=context,
     )
 
