@@ -208,13 +208,11 @@ def post_login(
 ) -> RedirectResponse:
     usuaria = fabr.bd.Usuaria.buscar(sessao=sessao, nome=token_request.nome)
     if usuaria is None or usuaria.verifica_senha(token_request.senha) is False:
-        print('autorizacao ruim' + '=' * 50)
         return RedirectResponse(
             url='/login',
             status_code=fastapi.status.HTTP_303_SEE_OTHER,
         )
 
-    print('autorizacao legal' + '=' * 50)
     vencimento = dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=48)
     dados = dict(nome=usuaria.nome)
     token = jwt.encode(
