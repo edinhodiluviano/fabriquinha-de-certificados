@@ -52,7 +52,7 @@ def verificar_login(
             config.segredo.get_secret_value(),
             algorithms=['HS256'],
         )
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_303_SEE_OTHER,
             headers=dict(location='/login'),
