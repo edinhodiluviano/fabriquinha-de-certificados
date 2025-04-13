@@ -141,3 +141,26 @@ def test_usuaria_busca(sessao, usuaria):
     assert isinstance(o1, fabr.bd.Usuaria)
     o2 = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome + 'a')
     assert o2 is None
+
+
+def test_usuaria_busca_somente_ativa_com_usuaria_ativa(sessao, usuaria):
+    u = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome, somente_ativas=True)
+    assert u.nome == usuaria.nome
+
+
+def test_usuaria_busca_somente_ativa_com_usuaria_inativa(sessao, usuaria):
+    usuaria.ativa = False
+    sessao.commit()
+    u = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome, somente_ativas=True)
+    assert u is None
+
+
+def test_usuaria_comunidades(sessao, comunidades, usuarias, acessos):
+    assert usuarias[0].administradora(sessao) == comunidades
+    assert usuarias[0].organizadora(sessao) == []
+    assert usuarias[1].administradora(sessao) == []
+    assert usuarias[1].organizadora(sessao) == comunidades
+    assert usuarias[2].administradora(sessao) == comunidades[:1]
+    assert usuarias[2].organizadora(sessao) == []
+    assert usuarias[4].administradora(sessao) == []
+    assert usuarias[4].organizadora(sessao) == comunidades[:1]

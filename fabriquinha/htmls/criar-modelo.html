@@ -1,60 +1,166 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Testar Certificado
+  Criar novo modelo
 {% endblock %}
 
 {% block content %}
-    <div class="content">
-        <img id="certificadoRascunho" src="data:image/png;base64,{{ png }}" style="width: 100%; max-width: 800px; height: auto; border: 5px solid #B0B0B0; box-sizing: border-box; border-style: double;" alt="Rascunho">
-    </div>
+  <div class="content">
+    <img id="certificadoRascunho" src="data:image/png;base64,{{ png }}" style="width: 100%; max-width: 800px; height: auto; border: 5px solid #B0B0B0; box-sizing: border-box; border-style: double;" alt="Rascunho">
+  </div>
 
-    <br><br><br>
+  <br>
 
+  <form action="/criar-modelo" method="POST">
     <div class="container">
-        <div class="row justify-content-center align-items-center">
-            <div class="input-group" >
-                <div class="input-group-prepend">
-                    <span class="input-group-text">HTML</span>
-                </div>
-                <textarea id="textohtml" class="form-control"  style="font-size: 10px; max-width: 1200px; height: 400px;" aria-label="html"></textarea>
-            </div>
-        </div>
-    </div>
 
-    <br>
-    <a class="btn btn-primary" onclick="testarHtml()" >Visualizar rascunho</a>
-    <br><br><br>
+      <!-- Textarea HTML -->
+      <div class="row justify-content-center mb-3">
+         <div class="col-md-10">
+          <div class="input-group" >
+            <div class="input-group-prepend">
+              <span class="input-group-text">HTML</span>
+            </div>
+            <textarea id="textohtml" name="html" class="form-control" style="font-family: monospace; font-size: 12px; max-width: 1200px; height: 400px;" aria-label="html" required></textarea>
+          </div>
+         </div>
+      </div>
+
+      <!-- Botão Visualizar Rascunho -->
+      <div class="row justify-content-center mb-3">
+        <div class="col-auto">
+          <a class="btn btn-primary" onclick="visualizaRascunho()" >Visualizar rascunho (Ctrl+Enter)</a>
+        </div>
+      </div>
+
+      <!-- Input Nome do Modelo -->
+      <div class="row justify-content-center mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Nome do Modelo</span>
+            </div>
+            <input type="text" id="nome" class="form-control" name="nome" placeholder="Ex: Palestrante Python Brasil 2025" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dropdown Comunidade -->
+      <div class="row justify-content-center mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="comunidade">Comunidade</label>
+            </div>
+            <select class="custom-select" id="comunidade" name="comunidade" required>
+              <option selected disabled value="">Escolha...</option>
+              {% for c in comunidades %}
+              <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão Salvar -->
+      <div class="row justify-content-center mb-3">
+        <div class="col-auto">
+          <a class="btn btn-primary" onclick="salvarModelo()" >Salvar Modelo</a>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+  <br><br><br>
 
 
 <script>
-    function testarHtml() {
-        var textohtml = document.getElementById("textohtml").value;
+  function visualizaRascunho() {
+    var textohtml = document.getElementById("textohtml").value;
 
-        fetch('/html2png', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({'html': textohtml})
-        })
-        .then(resposta => resposta.text())
-        .then(dados => {
-            console.log(dados);
-            document.getElementById('certificadoRascunho').src = dados;
-        })
-        .catch(erro => {
-            console.error('Erro na requisição:', erro);
-        });
+    fetch('/html2png', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({'html': textohtml})
+    })
+    .then(resposta => resposta.text())
+    .then(dados => {
+      console.log(dados);
+      document.getElementById('certificadoRascunho').src = dados;
+    })
+    .catch(erro => {
+      console.error('Erro na requisição:', erro);
+    });
+  }
+
+  document.getElementById('textohtml')
+    .addEventListener(
+      'keydown',
+      (event) => {
+        if(event.ctrlKey && (event.key == "Enter" || event.keyCode == 13)) { // Adiciona keyCode para compatibilidade
+          event.preventDefault(); // Previne nova linha no textarea
+          visualizaRascunho();
+        }
+      }
+    );
+
+  function salvarModelo() {
+    var textohtml = document.getElementById("textohtml").value;
+    var comunidade = document.getElementById("comunidade").value;
+    var nome = document.getElementById("nome").value;
+
+    if (textohtml.length < 10) {
+      alert('O html é obrigatório para um modelo de certificado.');
+      return;
+    } else if (comunidade.length === 0) {
+      alert('É obrigatório escolher uma comunidade para o modelo de certificado.');
+      return;
+    } else if (nome.length === 0) {
+      alert('É obrigatório escolher um nome para o modelo de certificado.');
+      return;
     }
 
-    document.getElementById('textohtml')
-        .addEventListener(
-            'keydown',
-            (event) => {
-                if(event.ctrlKey && event.key == "Enter") {
-                    testarHtml();
-                }
-            }
-        );
+    // Use FormData to send form-encoded data
+    const formData = new FormData();
+    formData.append('html', textohtml);
+    formData.append('nome', nome);
+    formData.append('comunidade', comunidade);
+
+    fetch('/criar-modelo', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        // If the response status is OK (e.g., 2xx) or if it's a redirect
+        // that fetch followed automatically resulting in a 2xx status for the final URL.
+        // The backend now returns 303, which fetch should follow.
+        // Check response.url to see the final destination if needed.
+        console.log('Modelo salvo com sucesso. Redirecionando para /u...');
+        window.location.href = '/u'; // Redirect on success
+      } else if (response.status === 403) {
+        // Specific handling for 403 Forbidden
+        response.text().then(text => {
+          alert(`Acesso negado: Você não tem permissão para criar modelos para esta comunidade. (${text || 'Sem detalhes'})`);
+        });
+      } else if (response.status === 500) {
+         // Example: Specific handling for 500 Internal Server Error
+        response.text().then(text => {
+          alert(`Erro interno no servidor: ${response.status}. (${text || 'Sem detalhes'})`);
+        });
+      } else {
+        // General handling for other non-ok errors
+        response.text().then(text => {
+          alert(`Erro ao salvar modelo: ${response.status} - ${text || 'Detalhes não disponíveis'}`);
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Erro na requisição fetch:', error);
+      alert('Erro de rede ou na requisição ao salvar o modelo.');
+    });
+  }
 </script>
 
 

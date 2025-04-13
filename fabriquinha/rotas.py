@@ -1,6 +1,7 @@
 import base64
 import datetime as dt
 import io
+import logging
 import re
 from typing import Annotated, NoReturn
 
@@ -22,6 +23,8 @@ from pydantic import BaseModel
 
 import fabriquinha as fabr
 
+
+logger = logging.getLogger(__name__)
 
 roteador = fastapi.APIRouter()
 htmls = Jinja2Templates(directory='fabriquinha/htmls')
@@ -157,10 +160,13 @@ def get_criar_modelo(
     req: Request,
     usuaria: LoginDeps,
     config: fabr.ambiente.ConfigDeps,
+    sessao: fabr.bd.Sessao,
 ) -> HTMLResponse:
-    # gera png como base64
+    # Busca comunidades que a pessoa usuária tem acesso
+    comunidades = usuaria.organizadora(sessao) + usuaria.administradora(sessao)
+    comunidades_nomes = sorted({c.nome for c in comunidades})
 
-    context = dict(png='')
+    context = dict(png='', comunidades=comunidades_nomes)
     return htmls.TemplateResponse(
         request=req,
         name='criar-modelo.html',
@@ -199,6 +205,50 @@ def post_html2png(texto_html: TextoHtml) -> Response:
     return Response(content=src, media_type='application/octet-stream')
 
 
+@roteador.post(
+    '/criar-modelo',
+    status_code=fastapi.status.HTTP_303_SEE_OTHER,
+    response_class=JSONResponse,
+)
+def post_criar_modelo(
+    req: Request,
+    usuaria: LoginDeps,
+    sessao: fabr.bd.Sessao,
+    nome: Annotated[str, Form()],
+    comunidade: Annotated[str, Form()],
+    html: Annotated[str, Form()],
+) -> JSONResponse:
+    # Verifica se a usuária tem acesso à comunidade selecionada
+    acesso = (
+        sessao.query(fabr.bd.Acesso)
+        .join(fabr.bd.Comunidade)
+        .where(
+            fabr.bd.Acesso.usuaria_id == usuaria.id,
+            fabr.bd.Comunidade.nome == comunidade,
+        )
+        .first()
+    )
+    if not acesso:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_403_FORBIDDEN,
+            detail='Acesso negado a esta comunidade.',
+        )
+
+    m = fabr.bd.Modelo.novo(
+        sessao=sessao,
+        nome=nome,
+        html=html,
+        comunidade=comunidade,
+    )
+    sessao.add(m)
+    sessao.commit()
+
+    return JSONResponse(
+        status_code=fastapi.status.HTTP_201_CREATED,
+        content=dict(nome=m.nome, comunidade=comunidade),
+    )
+
+
 class TokenRequest(BaseModel):
     nome: str
     senha: str
@@ -207,7 +257,7 @@ class TokenRequest(BaseModel):
 @roteador.post(
     '/login',
     status_code=fastapi.status.HTTP_200_OK,
-    response_class=JSONResponse,
+    response_class=RedirectResponse,
 )
 def post_login(
     token_request: Annotated[TokenRequest, Form()],

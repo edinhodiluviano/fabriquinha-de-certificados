@@ -8,7 +8,7 @@ import logging
 import random
 import zlib
 from collections.abc import Iterator
-from typing import Annotated, Self, TypeAlias
+from typing import Annotated, Literal, Self, TypeAlias
 from urllib.parse import urljoin
 
 import argon2
@@ -33,6 +33,7 @@ import fabriquinha as fabr
 
 logger = logging.getLogger(__name__)
 
+TipoDeAcesso: TypeAlias = Literal['Organizadora', 'Administradora']
 Conteudo: TypeAlias = dict[str, str | int | float | dt.date]
 
 
@@ -104,8 +105,6 @@ convencao_de_nomes = dict(
 class Base(DeclarativeBase):
     metadata = sa.MetaData(naming_convention=convencao_de_nomes)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-
     def __repr__(self) -> str:
         cls_name = self.__class__.__name__
         return f'{cls_name}(id={self.id})'
@@ -124,6 +123,7 @@ class Base(DeclarativeBase):
 class Comunidade(Base):
     __tablename__ = 'comunidade'
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(100), index=True, unique=True)
     modelos: Mapped[list['Modelo']] = relationship(back_populates='comunidade')
 
@@ -145,8 +145,11 @@ class Usuaria(Base):
 
     __tablename__ = 'usuaria'
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(100), index=True, unique=True)
     senha: Mapped[str] = mapped_column(String(100))
+    ativa: Mapped[bool] = mapped_column(index=True)
+    sysadmin: Mapped[bool] = mapped_column()
 
     @classmethod
     def novo(cls, nome: str, senha: str, teste: bool = False) -> Self:
@@ -155,7 +158,7 @@ class Usuaria(Base):
         else:
             ph = argon2.PasswordHasher()
         hash_da_senha = ph.hash(senha)
-        o = cls(nome=nome, senha=hash_da_senha)
+        o = cls(nome=nome, senha=hash_da_senha, ativa=True, sysadmin=False)
         return o
 
     def verifica_senha(self, senha_dada: str) -> bool:
@@ -166,10 +169,53 @@ class Usuaria(Base):
         return True
 
     @classmethod
-    def buscar(cls, sessao: Sessao, nome: str) -> Self | None:
+    def buscar(
+        cls,
+        sessao: Sessao,
+        nome: str,
+        somente_ativas: bool = True,
+    ) -> Self | None:
         stmt = sa.select(cls).where(cls.nome == nome)
+        if somente_ativas:
+            stmt = stmt.where(cls.ativa == True)
         o = sessao.execute(stmt).scalars().one_or_none()
         return o
+
+    def organizadora(self, sessao: Sessao) -> list[Comunidade]:
+        """Retorna as comunidades onde a usuária é Organizadora."""
+        stmt = (
+            sa.select(Comunidade)
+            .join(Acesso)
+            .where(Acesso.usuaria_id == self.id)
+            .where(Acesso.tipo == 'organizadora')
+        )
+        comunidades = sessao.execute(stmt).scalars().all()
+        return comunidades
+
+    def administradora(self, sessao: Sessao) -> list[Comunidade]:
+        """Retorna as comunidades onde a usuária é Administradora."""
+        stmt = (
+            sa.select(Comunidade)
+            .join(Acesso)
+            .where(Acesso.usuaria_id == self.id)
+            .where(Acesso.tipo == 'administradora')
+        )
+        comunidades = sessao.execute(stmt).scalars().all()
+        return comunidades
+
+
+class Acesso(Base):
+    __tablename__ = 'acesso'
+
+    usuaria_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('usuaria.id'),
+        primary_key=True,
+    )
+    comunidade_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('comunidade.id'),
+        primary_key=True,
+    )
+    tipo: Mapped[TipoDeAcesso] = mapped_column(String(100), index=True)
 
 
 class Modelo(Base):
@@ -192,6 +238,7 @@ class Modelo(Base):
 
     __tablename__ = 'modelo'
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(100))
     resumo: Mapped[str] = mapped_column(index=True)
     htmlzip: Mapped[str] = mapped_column(String(1024 * 100))
@@ -278,6 +325,7 @@ class Certificado(Base):
 
     __tablename__ = 'certificado'
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     codigo: Mapped[str] = mapped_column(String(12), index=True, unique=True)
     modelo_id: Mapped[int] = mapped_column(ForeignKey('modelo.id'))
     modelo: Mapped[Modelo] = relationship()

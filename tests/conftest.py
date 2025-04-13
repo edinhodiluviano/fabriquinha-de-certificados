@@ -125,15 +125,44 @@ def modelo(comunidades, html, sessao):
 
 
 @pytest.fixture
-def usuaria(sessao, gerar_str):
-    u = fabr.bd.Usuaria.novo(
-        nome=gerar_str(20),
-        senha='senha',
-        teste=True,
-    )
-    sessao.add(u)
+def usuarias(sessao, gerar_str):
+    us = [
+        fabr.bd.Usuaria.novo(
+            nome=gerar_str(20),
+            senha='senha',
+            teste=True,
+        )
+        for _ in range(20)
+    ]
+    sessao.add_all(us)
     sessao.commit()
-    return u
+    return us
+
+
+@pytest.fixture
+def acessos(sessao, usuarias, comunidades):
+    tabela = [
+        (usuarias[0].id, comunidades[0].id, 'administradora'),
+        (usuarias[0].id, comunidades[1].id, 'administradora'),
+        (usuarias[1].id, comunidades[0].id, 'organizadora'),
+        (usuarias[1].id, comunidades[1].id, 'organizadora'),
+        (usuarias[2].id, comunidades[0].id, 'administradora'),
+        (usuarias[3].id, comunidades[0].id, 'administradora'),
+        (usuarias[4].id, comunidades[0].id, 'organizadora'),
+        (usuarias[5].id, comunidades[0].id, 'organizadora'),
+    ]
+    a = [
+        fabr.bd.Acesso(usuaria_id=li[0], comunidade_id=li[1], tipo=li[2])
+        for li in tabela
+    ]
+    sessao.add_all(a)
+    sessao.commit()
+    return a
+
+
+@pytest.fixture
+def usuaria(usuarias):
+    return usuarias[0]
 
 
 @pytest.fixture
