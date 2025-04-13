@@ -1,6 +1,7 @@
 activate
 database
 proxy/acme/acme.json
+.aider*
 
 # Created by https://www.toptal.com/developers/gitignore/api/vim,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=vim,python
