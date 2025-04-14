@@ -1,37 +1,41 @@
 <div class="container">
-    <div class="row">
-        <div class="col-md-3">
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body" style="background-color: #e6e6e6;">
-                    <form action="javascript:void(0);" method="GET" onsubmit="validarCertificado()">
-                        <label for="codigo" class="form-label">Consulte seu certificado:</label>
-                        <br>
-                        <input style="width: 150px; text-align: center;" type="text" id="codigo" class "form-control" name="certificado" placeholder="código" required>
-                        <br>
-                        <input style="width: 150px;" type="submit" class="btn btn-primary" value="🔒 Validar">
-
-                    </form>
-                    <p id="resultado"></p>
-                </div>
-            </div>
-        </div>
+  <div class="row">
+    <div class="col-md-3">
     </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body" style="background-color: #e6e6e6;">
+          <form action="javascript:void(0);" method="GET" onsubmit="validarCertificado()">
+            <div class="row justify-content-center mb-2">
+              <label for="codigo" class="form-label">Consulte seu certificado:</label>
+            </div>
+            <div class="row justify-content-center mb-3">
+              <input style="width: 150px; text-align: center;" type="text" id="codigo" class="form-control" name="certificado" placeholder="código" required>
+            </div>
+            <div class="row justify-content-center mb-2">
+              <input style="width: 150px;" type="submit" class="btn btn-primary" value="🔒 Validar">
+            </div>
+
+          </form>
+          <p id="resultado"></p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-    function validarCertificado() {
-        var certificado = document.getElementById("codigo").value;
+  function validarCertificado() {
+    var certificado = document.getElementById("codigo").value;
 
-        certificado = certificado.trim()
-        // Verifica se o valor do certificado não está vazio
-        if (certificado.length === 12) {
-            // Redireciona para a URL /v/<certificado>
-            window.location.href = "/v/" + encodeURIComponent(certificado);
-        } else {
-            alert("Por favor, insira o código do certificado com 12 letras e números.");
-        }
+    certificado = certificado.trim()
+    // Verifica se o valor do certificado não está vazio
+    if (certificado.length === 12) {
+      // Redireciona para a URL /v/<certificado>
+      window.location.href = "/v/" + encodeURIComponent(certificado);
+    } else {
+      alert("Por favor, insira o código do certificado com 12 letras e números.");
     }
+  }
 </script>
 
