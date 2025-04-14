@@ -107,7 +107,7 @@ class Base(DeclarativeBase):
 
     def __repr__(self) -> str:
         cls_name = self.__class__.__name__
-        return f'{cls_name}(id={self.id})'
+        return f'{cls_name}(id={self.id})'  # type: ignore[attr-defined]
 
     def asdict(
         self,
@@ -177,7 +177,7 @@ class Usuaria(Base):
     ) -> Self | None:
         stmt = sa.select(cls).where(cls.nome == nome)
         if somente_ativas:
-            stmt = stmt.where(cls.ativa is True)
+            stmt = stmt.where(cls.ativa == True)
         o = sessao.execute(stmt).scalars().one_or_none()
         return o
 
