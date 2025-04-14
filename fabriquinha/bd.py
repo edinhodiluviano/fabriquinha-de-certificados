@@ -177,7 +177,7 @@ class Usuaria(Base):
     ) -> Self | None:
         stmt = sa.select(cls).where(cls.nome == nome)
         if somente_ativas:
-            stmt = stmt.where(cls.ativa == True)
+            stmt = stmt.where(cls.ativa is True)
         o = sessao.execute(stmt).scalars().one_or_none()
         return o
 

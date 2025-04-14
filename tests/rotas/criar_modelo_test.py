@@ -20,7 +20,12 @@ def test_get_criar_modelo(cliente, acessos, admin):
 
 
 def test_post_criar_modelo(
-    sessao, cliente, acessos, comunidades, admin, gerar_str,
+    sessao,
+    cliente,
+    acessos,
+    comunidades,
+    admin,
+    gerar_str,
 ):
     nome = gerar_str(20)
     data = dict(
@@ -38,7 +43,11 @@ def test_post_criar_modelo(
 
 
 def test_post_criar_modelo_com_usuaria_sem_acesso(
-    sessao, cliente, admin, comunidades, gerar_str,
+    sessao,
+    cliente,
+    admin,
+    comunidades,
+    gerar_str,
 ):
     nome = gerar_str(20)
     data = dict(
