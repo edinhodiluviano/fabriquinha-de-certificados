@@ -5,7 +5,7 @@ ruff format --check --diff fabriquinha tests
 echo ""
 
 echo "ruff check"
-ruff check --diff --unsafe-fixes fabriquinha tests
+ruff check fabriquinha tests
 echo ""
 
 echo "mypy"
