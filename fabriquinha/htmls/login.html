@@ -7,37 +7,26 @@
 {% block content %}
 
   <div class="container">
-    <div class="row">
-      <div class="col-md-3">
-      </div>
-
+    <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card-body" style="background-color: #e6e6e6;">
 
-          <div class="row justify-content-center">
-            <div class="col-4 mb-2">
-              <label for="codigo" class="form-label">Login:</label>
-            </div>
+          <div class="row justify-content-center mb-2">
+            <label for="codigo" class="form-label">Login:</label>
           </div>
           <form action="/login" method="POST">
 
-            <div class="row justify-content-center">
-              <div class="col-4 mb-1">
-                <input style="width: 150px; text-align: center;" type="text" id="nome" class="form-control " name="nome" placeholder="nome" required autofocus>
-              </div>
-            </div>
+          <div class="row justify-content-center mb-1">
+            <input style="width: 150px; text-align: center;" type="text" id="nome" class="form-control " name="nome" placeholder="nome" required autofocus>
+          </div>
 
-            <div class="row justify-content-center">
-              <div class="col-4 mb-3">
-                <input style="width: 150px; text-align: center;" type="password" id="senha" class="form-control" name="senha" placeholder="senha" required>
-              </div>
-            </div>
+          <div class="row justify-content-center mb-3">
+            <input style="width: 150px; text-align: center;" type="password" id="senha" class="form-control" name="senha" placeholder="senha" required>
+          </div>
 
-            <div class="row justify-content-center">
-              <div class="col-4 mb-3">
-                <input style="width: 150px;" type="submit" class="btn btn-primary" value="Entrar" onclick="login()">
-              </div>
-            </div>
+          <div class="row justify-content-center mb-3">
+            <input style="width: 150px;" type="submit" class="btn btn-primary" value="Entrar" onclick="login()">
+          </div>
 
           </form>
 
