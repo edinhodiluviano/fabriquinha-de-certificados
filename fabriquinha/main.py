@@ -10,14 +10,6 @@ def criar_app(config: fabr.ambiente.Config | None = None) -> fastapi.FastAPI:
         title='Fabriquinha de Certificados',
         description='',
         version='0.1',
-        # openapi_url=settings.openapi_url,
-        # docs_url=settings.docs_url,
-        # redoc_url=settings.redoc_url,
-        # default_response_class=fastapi.responses.ORJSONResponse,
-        # servers=[
-        #     dict(url='https://dev.api.facings.io'),
-        #     dict(url='https://api.facings.io'),
-        # ],
     )
 
     app.include_router(fabr.rotas.roteador)

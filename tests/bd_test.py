@@ -71,7 +71,7 @@ def test_gerar_png_retorna_str(certificados, config):
 
 
 def test_gerar_qrcode_retorna_str(gerar_str):
-    qrcode = fabr.bd._gerar_qrcode(s=gerar_str(10))
+    qrcode = fabr.bd.gerar_qrcode(s=gerar_str(10))
     assert isinstance(qrcode, str)
 
 
@@ -143,15 +143,27 @@ def test_usuaria_busca(sessao, usuaria):
     assert o2 is None
 
 
+def test_usuaria_busca_todas_com_usuaria_ativa(sessao, usuaria):
+    u = fabr.bd.Usuaria.buscar_todas(sessao, nome=usuaria.nome)
+    assert u.nome == usuaria.nome
+
+
+def test_usuaria_busca_todas_com_usuaria_inativa(sessao, usuaria):
+    usuaria.ativa = False
+    sessao.commit()
+    u = fabr.bd.Usuaria.buscar_todas(sessao, nome=usuaria.nome)
+    assert u.nome == usuaria.nome
+
+
 def test_usuaria_busca_somente_ativa_com_usuaria_ativa(sessao, usuaria):
-    u = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome, somente_ativas=True)
+    u = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome)
     assert u.nome == usuaria.nome
 
 
 def test_usuaria_busca_somente_ativa_com_usuaria_inativa(sessao, usuaria):
     usuaria.ativa = False
     sessao.commit()
-    u = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome, somente_ativas=True)
+    u = fabr.bd.Usuaria.buscar(sessao, nome=usuaria.nome)
     assert u is None
 
 

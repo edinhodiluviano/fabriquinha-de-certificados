@@ -82,7 +82,6 @@ LoginDeps = Annotated[fabr.bd.Usuaria, fastapi.Depends(verificar_login)]
 )
 def get_raiz(
     req: Request,
-    config: fabr.ambiente.ConfigDeps,
 ) -> HTMLResponse:
     return htmls.TemplateResponse(
         request=req,
@@ -129,7 +128,6 @@ def get_validar(
     response_class=StreamingResponse,
 )
 def get_download(
-    req: Request,
     codigo: str,
     sessao: fabr.bd.Sessao,
     config: fabr.ambiente.ConfigDeps,
@@ -159,7 +157,6 @@ def get_download(
 def get_criar_modelo(
     req: Request,
     usuaria: LoginDeps,
-    config: fabr.ambiente.ConfigDeps,
     sessao: fabr.bd.Sessao,
 ) -> HTMLResponse:
     # Busca comunidades que a pessoa usuária tem acesso
@@ -187,7 +184,7 @@ class TextoHtml(BaseModel):
 def post_html2png(texto_html: TextoHtml) -> Response:
     html_inicial = texto_html.html
 
-    qrcode = fabr.bd._gerar_qrcode('a')
+    qrcode = fabr.bd.gerar_qrcode('a')
     html = re.sub(r'\{\{ *?qrcode *?\}\}', qrcode, html_inicial)
 
     pdf_bytes = bytes(
@@ -211,7 +208,6 @@ def post_html2png(texto_html: TextoHtml) -> Response:
     response_class=JSONResponse,
 )
 def post_criar_modelo(
-    req: Request,
     usuaria: LoginDeps,
     sessao: fabr.bd.Sessao,
     nome: Annotated[str, Form()],

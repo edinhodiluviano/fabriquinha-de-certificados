@@ -54,7 +54,6 @@ def criar_motor(config: fabr.ambiente.Config) -> sa.Engine:
     logger.debug('Criando motor de conexão ao banco de dados')
     motor = sa.create_engine(
         url,
-        # json_serializer=dumps,
         pool_size=config.banco.conexoes,
         max_overflow=2,
         pool_timeout=5,
@@ -152,7 +151,12 @@ class Usuaria(Base):
     sysadmin: Mapped[bool] = mapped_column()
 
     @classmethod
-    def novo(cls, nome: str, senha: str, teste: bool = False) -> Self:
+    def novo(
+        cls,
+        nome: str,
+        senha: str,
+        teste: bool = False,  # NOQA: FBT001, FBT002
+    ) -> Self:
         if teste:
             ph = argon2.PasswordHasher(time_cost=3, memory_cost=100)
         else:
@@ -173,11 +177,20 @@ class Usuaria(Base):
         cls,
         sessao: Sessao,
         nome: str,
-        somente_ativas: bool = True,
     ) -> Self | None:
+        """Retorna as pessoas usuárias ativas."""
+        stmt = sa.select(cls).where(cls.nome == nome).where(cls.ativa == True)  # NOQA: E712
+        o = sessao.execute(stmt).scalars().one_or_none()
+        return o
+
+    @classmethod
+    def buscar_todas(
+        cls,
+        sessao: Sessao,
+        nome: str,
+    ) -> Self | None:
+        """Retorna todas as pessoas usuárias, ativas e inativas."""
         stmt = sa.select(cls).where(cls.nome == nome)
-        if somente_ativas:
-            stmt = stmt.where(cls.ativa == True)
         o = sessao.execute(stmt).scalars().one_or_none()
         return o
 
@@ -190,7 +203,7 @@ class Usuaria(Base):
             .where(Acesso.tipo == 'organizadora')
         )
         comunidades = sessao.execute(stmt).scalars().all()
-        return comunidades
+        return list(comunidades)
 
     def administradora(self, sessao: Sessao) -> list[Comunidade]:
         """Retorna as comunidades onde a usuária é Administradora."""
@@ -201,7 +214,7 @@ class Usuaria(Base):
             .where(Acesso.tipo == 'administradora')
         )
         comunidades = sessao.execute(stmt).scalars().all()
-        return comunidades
+        return list(comunidades)
 
 
 class Acesso(Base):
@@ -266,8 +279,8 @@ class Modelo(Base):
         return o
 
 
-def _gerar_qrcode(s: str) -> str:
-    # mimetype=image/png
+def gerar_qrcode(s: str) -> str:
+    # the mimetype is "image/png"
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -335,7 +348,7 @@ class Certificado(Base):
     @classmethod
     def novo(cls, modelo: Modelo, data: dt.date, conteudo: Conteudo) -> Self:
         car = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-        codigo = ''.join(random.choices(car, k=12))
+        codigo = ''.join(random.choices(car, k=12))  # NOQA: S311
         o = cls(
             codigo=codigo,
             modelo=modelo,
@@ -355,7 +368,7 @@ class Certificado(Base):
 
     def to_pdf(self, config: fabr.ambiente.Config) -> bytes:
         url_validacao = urljoin(config.url_base, 'v/' + self.codigo)
-        qrcode = _gerar_qrcode(url_validacao)
+        qrcode = gerar_qrcode(url_validacao)
 
         contexto = {
             **self.conteudo,

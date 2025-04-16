@@ -11,6 +11,7 @@ ignore = [
     "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
     "COM812",   # Trailing comma missing
     "C408",     # Unnecessary `dict()` call (rewrite as a literal)
+    "D",
     "D107",     # Missing docstring in `__init__`
     "D202",     # No blank lines allowed after function docstring
     "D203",     # one-blank-line-before-class
@@ -60,12 +61,17 @@ max-complexity = 5
 "tests/**.py" = [
     "D",
     "ANN",
+    "ARG",      # Unused function argument
     "S101",
-    "PT003",   # `scope='function'` is implied in `@pytest.fixture()`
-    "SLF001",  # Private member accessed
-    "S311",    # Standard pseudo-random generators aren't good for cryptography
+    "PLR0913",  # Too many arguments in function definition
+    "PT003",    # `scope='function'` is implied in `@pytest.fixture()`
+    "SLF001",   # Private member accessed
+    "S311",     # Standard pseudo-random generators aren't good for cryptography
 ]
-"*/__init__.py" = ["D"]
+"*/__init__.py" = ["D", "F401"]
+"fabriquinha/migracoes/*" = [
+    "INP001",  # File is part of an implicit namespace package. Add an `__init__.py`.
+]
 
 [lint.isort]
 lines-after-imports = 2
