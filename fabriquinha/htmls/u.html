@@ -6,10 +6,47 @@
 
 
 {% block content %}
-  <div class="container">
-    <div class="row justify-content-center">
+
+  <div class="container" style="max-width: 800px;">
+    <div class="row justify-content-left mb-4">
       <h4>Ola {{ usuaria.nome }} </h4>
     </div>
+
+    <div class="row justify-content-left mb-2">
+      <h5>Suas comunidades:</h5>
+    </div>
+
+    {% for c in comunidades %}
+
+      <div class="row justify-content-start mb-2">
+        <div class="col" style="max-width: 540px; padding-left: 0; padding-right: 0;">
+
+          <div class="card mb-3 border rounded card-hover-pointer" style:"cursor: pointer;">
+            <a href="/comunidade/{{ c }}" class="card-link-wrapper" aria-label="Ver comunidade {{ c }}" style="display: block; text-decoration: none; color: inherit;">
+              <div class="row g-0">
+
+                <div class="col-md-4">
+                  <img src="/e/cinza.png" class="img-fluid rounded-start h-100 object-fit-cover" alt="...">
+                </div>
+
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h4 class="card-title">{{ c }}</h4>
+                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                  </div>
+                </div>
+
+              </div>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    {% endfor %}
+
+
   </div>
-    
+
 {% endblock %}
