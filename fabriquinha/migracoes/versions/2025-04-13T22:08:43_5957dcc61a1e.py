@@ -52,7 +52,13 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_acesso_tipo'), 'acesso', ['tipo'], unique=False)
     op.add_column(
-        'modelo', sa.Column('comunidade_id', sa.Integer(), nullable=False)
+        'modelo',
+        sa.Column(
+            'comunidade_id',
+            sa.Integer(),
+            nullable=False,
+            server_default='0',
+        ),
     )
     op.drop_index('ix_modelo_emissora', table_name='modelo')
     op.create_index(
