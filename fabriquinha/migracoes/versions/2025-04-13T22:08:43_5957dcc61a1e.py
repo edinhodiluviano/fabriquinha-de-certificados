@@ -35,9 +35,7 @@ def upgrade() -> None:
     op.execute(
         """
             INSERT INTO comunidade (nome)
-            VALUES (
-                select emissora from modelo
-            )
+            SELECT emissora FROM modelo
         """
     )
 
@@ -61,15 +59,24 @@ def upgrade() -> None:
         ),
     )
     op.create_index(op.f('ix_acesso_tipo'), 'acesso', ['tipo'], unique=False)
-    op.add_column(
-        'modelo',
-        sa.Column(
-            'comunidade_id',
-            sa.Integer(),
-            nullable=False,
-            server_default='0',
-        ),
+
+    # tabela 'modelo'
+    # cria coluna 'comunidade_id' (sem restrições)
+    op.add_column('modelo', sa.Column('comunidade_id', sa.Integer()))
+    # adiciona dados na coluna
+    op.execute(
+        """
+            UPDATE modelo
+            SET comunidade_id = (
+                SELECT id
+                FROM comunidade
+                WHERE modelo.emissora = comunidade.nome
+            )
+        """
     )
+    # adiciona restrições
+    op.alter_column('modelo', 'comunidade_id', nullable=False)
+
     op.drop_index('ix_modelo_emissora', table_name='modelo')
     op.create_index(
         op.f('ix_modelo_comunidade_id'),
