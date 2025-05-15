@@ -61,8 +61,6 @@ def limpar_banco(sessao):
 def _sessao():
     with fabr.bd.criar_sessao() as sess:
         alembic_args = [
-            '--config',
-            'fabriquinha/migracoes/alembic.ini',
             '--raiseerr',
             'upgrade',
             'head',
@@ -70,8 +68,6 @@ def _sessao():
         alembic.config.main(argv=alembic_args)
         yield sess
         alembic_args = [
-            '--config',
-            'fabriquinha/migracoes/alembic.ini',
             '--raiseerr',
             'downgrade',
             '0',
