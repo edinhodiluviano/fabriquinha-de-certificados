@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Comunidades
+{% endblock %}
+
+
+{% block content %}
+  <div class="container" style="max-width: 800px;">
+    <div class="row justify-content-left mb-4">
+      <h4>Ola {{ usuaria.nome }} </h4>
+    </div>
+
+    <div class="row justify-content-left mb-2">
+      <h5>{{ comunidade }}</h5>
+    </div>
+
+    <div class="row justify-content-left mb-2">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Nome</th>
+              <th scope="col">Ativa</th>
+              <th scope="col">Função</th>
+            </tr>
+            {% for n, u in enumerate(usuarias) %}
+              <tr>
+                <th scope="row">{{ n }}</th>
+                <td>{{ u.name }}</td>
+                <td>{{ u.ativa }}</td>
+                <td>{{ u.acesso }}</td>
+              </tr>
+            {% endfor %}
+          </thead>
+        </table>
+      </div> 
+    </div>
+    
+
+  </div>
+
+
+<script>
+  setTimeout(function(){
+   window.location.reload(1);
+  }, 5000);
+
+</script>
+
+{% endblock %}
+

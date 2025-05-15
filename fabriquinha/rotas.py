@@ -8,6 +8,8 @@ from typing import Annotated, NoReturn
 import fastapi
 import jwt
 import pymupdf
+import sqlalchemy as sa
+import toolz
 import weasyprint
 from fastapi import Form, Request
 from fastapi.responses import (
@@ -307,9 +309,76 @@ def get_login(req: Request) -> HTMLResponse:
     status_code=fastapi.status.HTTP_200_OK,
     response_class=HTMLResponse,
 )
-def get_u(req: Request, usuaria: LoginDeps) -> HTMLResponse:
+def get_u(
+    req: Request,
+    usuaria: LoginDeps,
+    sessao: fabr.bd.Sessao,
+) -> HTMLResponse:
+    comunidades = sorted(
+        c.nome
+        for c
+        in usuaria.organizadora(sessao) + usuaria.administradora(sessao)
+    )
     return htmls.TemplateResponse(
         request=req,
         name='u.html',
-        context=dict(usuaria=usuaria),
+        context=dict(usuaria=usuaria, comunidades=comunidades),
+    )
+
+
+@roteador.get(
+    '/comunidade/{nome}',
+    status_code=fastapi.status.HTTP_200_OK,
+    response_model=None,
+)
+def get_comunidade(
+    nome: str,
+    usuaria: LoginDeps,
+    sessao: fabr.bd.Sessao,
+) -> HTMLResponse | RedirectResponse:
+    # verifica se a comunidade existe
+    comunidade = fabr.bd.Comunidade.buscar(sessao, nome=nome)
+    if comunidade is None:
+        return RedirectResponse(
+            url='/u',
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
+        )
+
+    # verifica se a pessoa tem acesso à comunidade
+    stmt = (
+        sa.select(fabr.bd.Acesso)
+        .where(fabr.bd.Acesso.usuaria_id == usuaria.id)
+        .where(fabr.bd.Acesso.comunidade_id == comunidade.id)
+    )
+    acesso = sessao.execute(stmt).scalars().one_or_none()
+    if acesso is None:
+        return RedirectResponse(
+            url='/u',
+            status_code=fastapi.status.HTTP_403_FORBIDDEN,
+        )
+
+    context = dict(comunidade=comunidade.nome)
+
+    # coleta todas as pessoas oragnizadoras e administradoras da comunidade
+    stmt = (
+        sa.select(fabr.bd.Acesso, fabr.bd.Usuaria)
+        .join(fabr.bd.Usuaria)
+        .order_by(fabr.bd.Acesso.tipo, fabr.bd.Usuaria.nome)
+    )
+    acesso_usuaria = sessao.execute(stmt).scalars().all()
+    adiciona_acesso = lambda a: lambda u: setattr(u, 'acesso', a.tipo)
+    usuarias = [toolz.do(adiciona_acesso(a), u) for a, u in acesso_usuaria]
+    context = context | dict(usuarias=usuarias)
+
+    # verifica o tipo de acesso
+    if acesso.tipo in {'organizadora', 'administradora'}:
+        context = context | dict(emitir=True)
+    if acesso.tipo == 'administradora':
+        pass
+
+    # retorna a página
+    return htmls.TemplateResponse(
+        request=req,
+        name='comunidade.html',
+        context=context,
     )
