@@ -34,7 +34,12 @@ def upgrade() -> None:
     op.create_table(
         'acesso',
         sa.Column('usuaria_id', sa.Integer(), nullable=False),
-        sa.Column('comunidade_id', sa.Integer(), nullable=False),
+        sa.Column(
+            'comunidade_id',
+            sa.Integer(),
+            nullable=False,
+            server_default='0',
+        ),
         sa.Column('tipo', sa.String(length=100), nullable=False),
         sa.ForeignKeyConstraint(
             ['comunidade_id'],
