@@ -17,8 +17,6 @@ logging.config.fileConfig('logging.conf', disable_existing_loggers=True)
 if __name__ == '__main__':
     # aplicar migrações
     alembic_args = [
-        '--config',
-        'fabriquinha/migracoes/alembic.ini',
         '--raiseerr',
         'upgrade',
         'head',
