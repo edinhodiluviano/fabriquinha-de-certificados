@@ -35,7 +35,7 @@ def upgrade() -> None:
     op.execute(
         """
             INSERT INTO comunidade (nome)
-            SELECT emissora FROM modelo
+            SELECT DISTINCT emissora FROM modelo
         """
     )
 
